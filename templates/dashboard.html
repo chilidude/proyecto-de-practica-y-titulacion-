@@ -1,0 +1,135 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<h2 class="mb-4 text-primary fw-bold">Dashboard - Sistema de Gestión</h2>
+
+<div class="row g-3">
+
+  <!-- Tipos de recursos -->
+  <div class="col-md-4">
+    <div class="card bg-primary text-white shadow-sm rounded-3">
+      <div class="card-body d-flex align-items-center justify-content-between">
+        <div>
+          <h3 class="fw-bold">{{ total_items }}</h3>
+          <p class="mb-0">Tipos de recursos</p>
+        </div>
+        <i class="fas fa-box fa-2x opacity-75"></i>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recursos disponibles -->
+  <div class="col-md-4">
+    <div class="card bg-success text-white shadow-sm rounded-3">
+      <div class="card-body d-flex align-items-center justify-content-between">
+        <div>
+          <h3 class="fw-bold">{{ total_recursos }}</h3>
+          <p class="mb-0">Recursos disponibles</p>
+        </div>
+        <i class="fas fa-check-circle fa-2x opacity-75"></i>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recursos perdidos -->
+  <div class="col-md-4">
+    <div class="card bg-danger text-white shadow-sm rounded-3">
+      <div class="card-body d-flex align-items-center justify-content-between">
+        <div>
+          <h3 class="fw-bold">{{ total_merma }}</h3>
+          <p class="mb-0">Recursos perdidos</p>
+        </div>
+        <i class="fas fa-exclamation-triangle fa-2x opacity-75"></i>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<br>
+
+<div class="row g-3">
+
+  <!-- Inventario disponible -->
+  <div class="col-md-6">
+    <div class="card shadow-sm rounded-3">
+      <div class="card-header bg-success text-white fw-bold">
+        Inventario disponible
+      </div>
+      <div class="card-body">
+        <canvas id="inventarioChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Merma por recurso -->
+  <div class="col-md-6">
+    <div class="card shadow-sm rounded-3">
+      <div class="card-header bg-danger text-white fw-bold">
+        Merma por recurso
+      </div>
+      <div class="card-body">
+        <canvas id="mermaChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const recursos_nombres = {{ recursos_nombres|tojson }};
+const recursos_cantidades = {{ recursos_cantidades|tojson }};
+const merma_nombres = {{ merma_nombres|tojson }};
+const merma_cantidades = {{ merma_cantidades|tojson }};
+
+function createGradient(ctx, color) {
+  const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+  gradient.addColorStop(0, color.replace('1)', '0.7)'));
+  gradient.addColorStop(1, color.replace('1)', '0.2)'));
+  return gradient;
+}
+
+const ctxInv = document.getElementById('inventarioChart').getContext('2d');
+new Chart(ctxInv, {
+    type: 'bar',
+    data: {
+        labels: recursos_nombres,
+        datasets: [{
+            label: 'Cantidad disponible',
+            data: recursos_cantidades,
+            backgroundColor: createGradient(ctxInv, 'rgba(40,167,69,1)'),
+            borderColor: 'rgba(40,167,69,1)',
+            borderWidth: 1
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+    }
+});
+
+const ctxMer = document.getElementById('mermaChart').getContext('2d');
+new Chart(ctxMer, {
+    type: 'bar',
+    data: {
+        labels: merma_nombres,
+        datasets: [{
+            label: 'Cantidad perdida',
+            data: merma_cantidades,
+            backgroundColor: createGradient(ctxMer, 'rgba(220,53,69,1)'),
+            borderColor: 'rgba(220,53,69,1)',
+            borderWidth: 1
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+    }
+});
+</script>
+
+{% endblock %}

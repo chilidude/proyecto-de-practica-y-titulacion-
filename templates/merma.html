@@ -1,0 +1,33 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<h2 class="mb-4">Registrar Merma - {{ recurso.nombre }}</h2>
+
+<div class="card">
+  <div class="card-header bg-info text-white">
+    Registrar merma del recurso
+  </div>
+  <div class="card-body">
+    <form action="/merma/{{ recurso.id }}/guardar" method="post">
+      <div class="form-group mb-3">
+        <label>Cantidad perdida/danada</label>
+        <input type="number" name="cantidad" class="form-control" placeholder="Cantidad de merma" min="1" max="{{ recurso.cantidad }}" required>
+      </div>
+      <div class="form-group mb-3">
+        <label>Fecha</label>
+        <input type="date" name="fecha" class="form-control" required>
+      </div>
+      <button type="submit" class="btn btn-primary" data-bs-toggle="tooltip" title="Registrar merma del recurso seleccionado">
+        <i class="fas fa-exclamation-triangle"></i> Registrar Merma
+      </button>
+      <a href="/" class="btn btn-secondary">Cancelar</a>
+    </form>
+    <a href="/exportar_merma?recurso_id={{ filtro_recurso }}&fecha={{ filtro_fecha }}"
+   class="btn btn-success mt-3">
+   <i class="fas fa-file-excel"></i> Exportar Excel
+</a>
+  </div>
+</div>
+
+{% endblock %}

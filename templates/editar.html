@@ -1,0 +1,29 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<h2 class="mb-4">Editar Recurso</h2>
+
+<div class="card">
+  <div class="card-header bg-warning text-white">
+    Editar recurso
+  </div>
+  <div class="card-body">
+    <form action="/editar/{{ recurso.id }}/guardar" method="post">
+      <div class="mb-3">
+        <label for="nombre" class="form-label">Nombre del recurso</label>
+        <input type="text" class="form-control" id="nombre" name="nombre" value="{{ recurso.nombre }}" required>
+      </div>
+      <div class="mb-3">
+        <label for="cantidad" class="form-label">Cantidad</label>
+        <input type="number" class="form-control" id="cantidad" name="cantidad" value="{{ recurso.cantidad }}" required>
+      </div>
+      <button type="submit" class="btn btn-success">
+        <i class="fas fa-save"></i> Guardar cambios
+      </button>
+      <a href="/" class="btn btn-secondary">Cancelar</a>
+    </form>
+  </div>
+</div>
+
+{% endblock %}

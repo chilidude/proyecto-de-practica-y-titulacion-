@@ -1,0 +1,115 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<h2 class="mb-4 text-primary">Asignaciones de Recursos a Trabajadores - Turismo Andino SpA</h2>
+
+<!-- FORMULARIO DE FILTROS -->
+<form method="get" class="row g-2 align-items-center mb-3">
+  <div class="col-md-3">
+    <select name="trabajador_id" class="form-control">
+      <option value="">Filtrar por trabajador</option>
+      {% for t in trabajadores %}
+        <option value="{{ t.id }}" {% if filtro_trabajador == t.id|string %}selected{% endif %}>
+          {{ t.nombre }} ({{ t.cargo }})
+        </option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-md-3">
+    <select name="recurso_id" class="form-control">
+      <option value="">Filtrar por recurso</option>
+      {% for r in recursos %}
+        <option value="{{ r.id }}" {% if filtro_recurso == r.id|string %}selected{% endif %}>
+          {{ r.nombre }}
+        </option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-md-2">
+    <button class="btn btn-primary w-100">Aplicar filtro</button>
+  </div>
+</form>
+<a href="/exportar_asignaciones?trabajador_id={{ filtro_trabajador }}&recurso_id={{ filtro_recurso }}"
+   class="btn btn-success mb-3">
+   Exportar Excel
+</a>
+
+<!-- FORMULARIO DE ASIGNAR RECURSO -->
+<div class="card mb-4 shadow-sm">
+  <div class="card-header bg-primary text-white fw-bold">Asignar Recurso</div>
+  <div class="card-body">
+    <form action="/asignaciones/agregar" method="post" class="row g-2 align-items-center">
+      <div class="col-md-3">
+        <select name="trabajador_id" class="form-control" required>
+          <option value="">Seleccionar trabajador</option>
+          {% for t in trabajadores %}
+            <option value="{{ t.id }}">{{ t.nombre }} ({{ t.cargo }})</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-3">
+        <select name="recurso_id" class="form-control" required>
+          <option value="">Seleccionar recurso</option>
+          {% for r in recursos %}
+            {% if r.cantidad > 0 %}
+              <option value="{{ r.id }}">{{ r.nombre }} (Disponibles: {{ r.cantidad }})</option>
+            {% endif %}
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2">
+        <input type="number" name="cantidad" class="form-control" placeholder="Cantidad" min="1" required>
+      </div>
+      <div class="col-md-2">
+        <input type="date" name="fecha" class="form-control" required>
+      </div>
+      <div class="col-md-2">
+        <button class="btn btn-success w-100">
+          <i class="fas fa-plus me-1"></i> Asignar
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- LISTADO DE ASIGNACIONES -->
+<div class="card shadow-sm">
+  <div class="card-header bg-dark text-white fw-bold">Listado de Asignaciones</div>
+  <div class="card-body table-responsive">
+    {% if asignaciones|length == 0 %}
+      <p class="text-muted">No hay asignaciones registradas aún.</p>
+    {% else %}
+      <table class="table table-striped table-hover align-middle">
+        <thead class="table-dark">
+          <tr>
+            <th>ID</th>
+            <th>Trabajador</th>
+            <th>Recurso</th>
+            <th>Cantidad</th>
+            <th>Fecha</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for a in asignaciones %}
+          <tr>
+            <td>{{ a.id }}</td>
+            <td>{{ a.trabajador }}</td>
+            <td>{{ a.recurso }}</td>
+            <td>{{ a.cantidad }}</td>
+            <td>{{ a.fecha }}</td>
+            <td>
+              <a href="/asignaciones/eliminar/{{ a.id }}" class="btn btn-sm btn-danger mb-1">
+                <i class="fas fa-trash me-1"></i> Eliminar
+              </a>
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    {% endif %}
+  </div>
+</div>
+
+{% endblock %}
