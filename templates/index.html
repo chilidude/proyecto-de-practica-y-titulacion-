@@ -10,12 +10,18 @@
   </div>
   <div class="card-body">
     <form action="/agregar" method="post" class="row g-2 align-items-center">
-      <div class="col-md-5">
+      <div class="col-md-4">
         <input type="text" name="nombre" class="form-control" placeholder="Nombre del recurso (ej. Kayaks, Guías, Botiquín)" required>
       </div>
       <div class="col-md-3">
         <input type="number" name="cantidad" class="form-control" placeholder="Cantidad disponible" min="1" required>
       </div>
+
+      <!-- 🔥 NUEVO (OBLIGATORIO) -->
+      <div class="col-md-3">
+        <input type="date" name="fecha" class="form-control" required>
+      </div>
+
       <div class="col-md-2">
         <button class="btn btn-success w-100" data-bs-toggle="tooltip" title="Agregar recurso al inventario">
           <i class="fas fa-plus me-1"></i> Agregar
@@ -49,13 +55,13 @@
             <td>{{ r.nombre }}</td>
             <td>{{ r.cantidad }}</td>
             <td>
-              <a href="/editar/{{ r.id }}" class="btn btn-sm btn-warning mb-1" data-bs-toggle="tooltip" title="Editar recurso">
+              <a href="/editar/{{ r.id }}" class="btn btn-sm btn-warning mb-1">
                 <i class="fas fa-edit me-1"></i> Editar
               </a>
-              <a href="/eliminar/{{ r.id }}" class="btn btn-sm btn-danger mb-1" data-bs-toggle="tooltip" title="Eliminar recurso">
+              <a href="/eliminar/{{ r.id }}" class="btn btn-sm btn-danger mb-1">
                 <i class="fas fa-trash me-1"></i> Eliminar
               </a>
-              <a href="/merma/{{ r.id }}" class="btn btn-sm btn-info mb-1" data-bs-toggle="tooltip" title="Registrar merma o pérdida del recurso">
+              <a href="/merma/{{ r.id }}" class="btn btn-sm btn-info mb-1">
                 <i class="fas fa-exclamation-triangle me-1"></i> Merma
               </a>
             </td>

@@ -75,11 +75,36 @@ def index():
 def agregar():
     nombre = request.form["nombre"]
     cantidad = int(request.form["cantidad"])
+    fecha = request.form.get("fecha")  # opcional, si tu form tiene fecha
+
     conn = get_db()
-    conn.execute("INSERT INTO recursos (nombre,cantidad) VALUES (?,?)", (nombre, cantidad))
+
+    # Verificar si ya existe el recurso
+    recurso = conn.execute("SELECT * FROM recursos WHERE nombre=?", (nombre,)).fetchone()
+
+    if recurso:
+        conn.execute(
+            "UPDATE recursos SET cantidad = cantidad + ? WHERE id=?",
+            (cantidad, recurso["id"])
+        )
+        recurso_id = recurso["id"]
+    else:
+        cursor = conn.execute(
+            "INSERT INTO recursos (nombre,cantidad) VALUES (?,?)",
+            (nombre, cantidad)
+        )
+        recurso_id = cursor.lastrowid
+
+    # Registrar entrada en historial
+    conn.execute(
+        "INSERT INTO entradas (recurso_id, cantidad, fecha) VALUES (?, ?, ?)",
+        (recurso_id, cantidad, fecha)
+    )
+
     conn.commit()
     conn.close()
-    flash(f"Recurso '{nombre}' agregado correctamente", "success")
+
+    flash(f"Entrada de '{nombre}' registrada correctamente", "success")
     return redirect("/")
 
 @app.route("/eliminar/<int:id>")
@@ -303,6 +328,7 @@ def dashboard():
         merma_nombres=merma_nombres,
         merma_cantidades=merma_cantidades
     )
+
 #  REPORTES 
 @app.route("/reportes")
 @login_required
@@ -320,19 +346,25 @@ def reportes():
     """).fetchall()
     
     # Asignaciones
-    asignaciones = conn.execute("""
-        SELECT a.id, a.trabajador, a.recurso, a.cantidad, a.fecha
-        FROM asignaciones a
-    """).fetchall()
+    asignaciones = conn.execute("SELECT id, trabajador, recurso, cantidad, fecha FROM asignaciones").fetchall()
     
+    # Entradas
+    entradas = conn.execute("""
+        SELECT e.id, r.nombre, e.cantidad, e.fecha
+        FROM entradas e
+        JOIN recursos r ON r.id = e.recurso_id
+    """).fetchall()
+
     conn.close()
     
     return render_template(
         "reportes.html",
         inventario=inventario,
         mermas=mermas,
-        asignaciones=asignaciones
+        asignaciones=asignaciones,
+        entradas=entradas
     )
+
 #  EXPORTAR EXCEL 
 @app.route("/exportar_trabajadores")
 @login_required
@@ -397,7 +429,7 @@ def exportar_asignaciones():
     df.to_excel(output, index=False, sheet_name="Asignaciones")
     output.seek(0)
     return send_file(output, download_name="asignaciones.xlsx", as_attachment=True)
-#  EXPORTAR INVENTARIO A EXCEL 
+
 @app.route("/exportar_excel")
 @login_required
 def exportar_excel():
@@ -405,10 +437,6 @@ def exportar_excel():
     inventario = conn.execute("SELECT * FROM recursos").fetchall()
     conn.close()
 
-    import pandas as pd
-    from io import BytesIO
-
-    # Convertimos a DataFrame y ordenamos por nombre
     df = pd.DataFrame([dict(row) for row in inventario])
     df = df[["id", "nombre", "cantidad"]].sort_values(by="nombre")
 
@@ -456,6 +484,14 @@ if __name__ == "__main__":
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             username TEXT UNIQUE,
             password TEXT
+        )
+    """)
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS entradas(
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            recurso_id INTEGER,
+            cantidad INTEGER,
+            fecha TEXT
         )
     """)
     password = generate_password_hash("admin")
